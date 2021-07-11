@@ -33,14 +33,13 @@ func init() {
 	rootCmd.Flags().BoolVarP(&debug, "debug", "D", false, "show the debug log")
 	rootCmd.Flags().BoolVarP(&showVersion, "version", "v", false, "show the version and exit")
 	rootCmd.Flags().IntVarP(&counter, "counter", "c", 4, "ping counter")
-	rootCmd.Flags().StringVarP(&pingTimeout, "timeout", "T", "1s", `connect timeout, units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
+	rootCmd.Flags().StringVarP(&pingTimeout, "timeout", "T", "1s", `connect timeout for every ping, units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 	rootCmd.Flags().StringVarP(&interval, "interval", "I", "500ms", `ping interval, units are "ns", "us" (or "µs"), "ms", "s", "m", "h"`)
 }
 
 var rootCmd = cobra.Command{
-	Use:   "test tcp ping speed for nodes of subscribe url",
-	Short: "",
-	Long:  "",
+	Use:   "test speed of tcp ping for nodes of your subscribe link, Usage: air-force \"your subscribe link\"",
+	Short: "test speed of tcp ping ",
 	Run: func(cmd *cobra.Command, args []string) {
 		if showVersion {
 			fmt.Printf("version: %s\n", version)

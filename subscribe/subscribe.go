@@ -2,9 +2,6 @@ package subscribe
 
 import (
 	"context"
-	"encoding/base64"
-	"encoding/json"
-	"fmt"
 	"io/ioutil"
 	"log"
 	"net/http"
@@ -17,8 +14,6 @@ type Config struct {
 	Port     string `json:"port"`
 	Name     string `json:"ps"`
 }
-
-var allowedSchemes = []string{"vmess", "ss", "socks", "ssr"}
 
 func LoadConfigs(ctx context.Context, url string) (configs []*Config, err error) {
 	client := &http.Client{}
@@ -40,14 +35,13 @@ func LoadConfigs(ctx context.Context, url string) (configs []*Config, err error)
 		return
 	}
 
-	dec, err := base64.StdEncoding.DecodeString(string(bBody))
+	dec, err := b64Decode(string(bBody))
 	if err != nil {
 		return
 	}
 
-	links := strings.Split(string(dec), "\n")
+	links := strings.Split(dec, "\n")
 
-	fmt.Println(links)
 	configs = make([]*Config, 0, len(links))
 
 	for _, link := range links {
@@ -55,30 +49,19 @@ func LoadConfigs(ctx context.Context, url string) (configs []*Config, err error)
 			continue
 		}
 		segments := strings.Split(link, "://")
-		if len(segments) < 2 || !Contains(allowedSchemes, segments[0]) {
+		if len(segments) < 2 {
 			log.Printf("invalid link: %s", link)
 			continue
 		}
-
-		dec, err = base64.StdEncoding.DecodeString(segments[1])
+		config, err := SchemeParser(segments[0], segments[1])
 		if err != nil {
-			log.Printf("decode link '%s' failed, %s", link, err)
+			log.Printf("parse link '%s' error, err: %s", link, err)
 			continue
 		}
 
-		cfg := &Config{}
-		json.Unmarshal(dec, cfg)
-		configs = append(configs, cfg)
+		configs = append(configs, config)
 	}
 
 	return
 }
 
-func Contains(strArr []string, str string) bool {
-	for _, s := range strArr {
-		if s == str {
-			return true
-		}
-	}
-	return false
-}
